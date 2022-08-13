@@ -11,18 +11,28 @@ CREATE DATABASE overview;
 
 CREATE TABLE categories (
   category_id SERIAL,
-  category VARCHAR(20),
-  PRIMARY KEY (category_id)
+  category TEXT,
+
+  PRIMARY KEY (category_id),
+  CONSTRAINT chk_category
+    CHECK (char_length(category) <= 20)
 );
 
 CREATE TABLE products (
   product_id SERIAL,
-  name VARCHAR(100) NOT NULL UNIQUE,
-  slogan VARCHAR(255),
-  description VARCHAR(255),
-  default_price NUMERIC(10, 2),
+  name TEXT NOT NULL UNIQUE,
+  slogan TEXT,
+  description TEXT,
   category_id INT,
+  default_price NUMERIC(10, 2),
+
   PRIMARY KEY (product_id),
+  CONSTRAINT chk_name
+    CHECK (char_length(name) <= 30),
+  CONSTRAINT chk_slogan
+    CHECK (char_length(slogan) <= 120),
+  CONSTRAINT chk_description
+    CHECK (char_length(description) <= 500),
   CONSTRAINT fk_category
     FOREIGN KEY (category_id)
       REFERENCES categories(category_id)
@@ -30,15 +40,21 @@ CREATE TABLE products (
 
 CREATE TABLE features (
   feature_id SERIAL,
-  feature VARCHAR(50),
-  value VARCHAR(50) DEFAULT NULL,
+  feature TEXT,
+  value TEXT DEFAULT NULL,
+
   PRIMARY KEY (feature_id),
+  CONSTRAINT chk_feature
+    CHECK (char_length(feature) <= 30),
+  CONSTRAINT chk_value
+    CHECK (char_length(value) <= 30),
   UNIQUE (feature, value)
 );
 
 CREATE TABLE product_features (
   product_id INT NOT NULL,
   feature_id INT NOT NULL,
+
   CONSTRAINT fk_product
     FOREIGN KEY (product_id)
       REFERENCES products(product_id),
@@ -50,12 +66,15 @@ CREATE TABLE product_features (
 
 CREATE TABLE styles (
   style_id SERIAL,
-  name VARCHAR(50) NOT NULL,
+  name TEXT NOT NULL,
   is_default BOOLEAN NOT NULL DEFAULT FALSE,
   original_price NUMERIC(10, 2),
   sale_price NUMERIC(10,2) DEFAULT NULL,
   product_id INT,
+
   PRIMARY KEY (style_id),
+  CONSTRAINT chk_name
+    CHECK (char_length(name) <= 30),
   CONSTRAINT fk_product
     FOREIGN KEY (product_id)
       REFERENCES products(product_id)
@@ -63,10 +82,15 @@ CREATE TABLE styles (
 
 CREATE TABLE photos (
   photo_id SERIAL,
-  url VARCHAR(255),
-  thumbnail_url VARCHAR(255),
+  url TEXT,
+  thumbnail_url TEXT,
   style_id INT,
+
   PRIMARY KEY (photo_id),
+  CONSTRAINT chk_url
+    CHECK (char_length(url) <= 180),
+  CONSTRAINT chk_thumbnail_url
+    CHECK (char_length(thumbnail_url) <= 180),
   CONSTRAINT fk_style
     FOREIGN KEY (style_id)
       REFERENCES styles(style_id)
@@ -74,9 +98,12 @@ CREATE TABLE photos (
 
 CREATE TABLE skus (
   sku_id SERIAL,
-  size VARCHAR(10),
+  size TEXT,
   style_id INT,
+
   PRIMARY KEY (sku_id),
+  CONSTRAINT chk_size
+    CHECK (char_length(size) <= 10),
   CONSTRAINT fk_style
     FOREIGN KEY (style_id)
       REFERENCES styles(style_id)
