@@ -3,9 +3,11 @@ Execute this file from the command line by typing:
   psql postgres < db/schema.sql
 */
 
+/*
 DROP DATABASE IF EXISTS overview;
 
 CREATE DATABASE overview;
+*/
 
 \c overview;
 
@@ -20,11 +22,11 @@ CREATE TABLE categories (
 
 CREATE TABLE products (
   product_id SERIAL,
-  name TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
   slogan TEXT,
   description TEXT,
   category_id INT,
-  default_price NUMERIC(10, 2),
+  default_price NUMERIC(11, 2),
 
   PRIMARY KEY (product_id),
   CONSTRAINT chk_name
@@ -66,11 +68,11 @@ CREATE TABLE product_features (
 
 CREATE TABLE styles (
   style_id SERIAL,
-  name TEXT NOT NULL,
-  is_default BOOLEAN NOT NULL DEFAULT FALSE,
-  original_price NUMERIC(10, 2),
-  sale_price NUMERIC(10,2) DEFAULT NULL,
   product_id INT,
+  name TEXT NOT NULL,
+  default_style BOOLEAN NOT NULL DEFAULT FALSE,
+  original_price NUMERIC(11, 2),
+  sale_price NUMERIC(11,2) DEFAULT NULL,
 
   PRIMARY KEY (style_id),
   CONSTRAINT chk_name
@@ -82,9 +84,9 @@ CREATE TABLE styles (
 
 CREATE TABLE photos (
   photo_id SERIAL,
+  style_id INT,
   url TEXT,
   thumbnail_url TEXT,
-  style_id INT,
 
   PRIMARY KEY (photo_id),
   CONSTRAINT chk_url
@@ -98,8 +100,9 @@ CREATE TABLE photos (
 
 CREATE TABLE skus (
   sku_id SERIAL,
-  size TEXT,
   style_id INT,
+  size TEXT,
+  Quantity INT,
 
   PRIMARY KEY (sku_id),
   CONSTRAINT chk_size
@@ -108,29 +111,3 @@ CREATE TABLE skus (
     FOREIGN KEY (style_id)
       REFERENCES styles(style_id)
 );
-
-CREATE TABLE inventory (
-  quantity INT DEFAULT 0,
-  sku_id INT UNIQUE,
-  CONSTRAINT fk_sku
-    FOREIGN KEY (sku_id)
-      REFERENCES skus(sku_id)
-);
-
-/*
-After created, log list of relations and tables to a text file.
-
-$ psql postgres
-\c overview
-\o overviewDB.txt
-\dt
-\d categories
-\d products
-\d features
-\d product_features
-\d styles
-\d photos
-\d skus
-\d inventory
-\q
-*/
