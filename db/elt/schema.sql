@@ -102,7 +102,7 @@ CREATE TABLE skus (
   sku_id SERIAL,
   style_id INT,
   size TEXT,
-  Quantity INT,
+  quantity INT,
 
   PRIMARY KEY (sku_id),
   CONSTRAINT chk_size
