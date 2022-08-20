@@ -1,14 +1,14 @@
-// import environment variables
-require('dotenv').config();
-
 const { Client } = require('pg');
+const { user, host, database, password, port } = require('../dbConfig');
 
 const db = new Client({
-  host: PGHOST,
-  user: PGUSER,
-  port: 3000,
-  password: PGPASSWORD,
-  database: 'overview',
+  user,
+  host,
+  database,
+  password,
+  port,
 });
 
 db.connect();
+
+module.exports = db;
