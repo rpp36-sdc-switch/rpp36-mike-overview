@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/ELTScript.sql
+  psql postgres < db/elt/ELTScript.sql
 */
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,30 +197,37 @@ CREATE TABLE skus (
 -- Load data from temporary tables into permanent tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- Expect 28 records in categories table
 INSERT INTO categories (category)
   SELECT DISTINCT category FROM products_temp ORDER BY category ASC;
 
+-- Expect 1,000,011 records in products table
 INSERT INTO products (product_id, name, slogan, description, category_id, default_price)
   SELECT products_temp.product_id, products_temp.name, products_temp.slogan, products_temp.description, categories.category_id, products_temp.default_price
   FROM products_temp, categories
   WHERE products_temp.category = categories.category;
 
+-- Expect 46 records in features table
 INSERT INTO features (feature, value)
   SELECT DISTINCT feature, value FROM features_temp ORDER BY feature, value ASC;
 
+-- Expect 2,132,016 records in product_features table (2,219,279 records in source data includes 87,263 duplicates)
 INSERT INTO product_features (product_id, feature_id)
   SELECT DISTINCT features_temp.product_id, features.feature_id
   FROM features_temp, features
-  WHERE features_temp.feature = features.feature AND features_temp.value = features.value;
+  WHERE features_temp.feature = features.feature AND (features_temp.value = features.value OR features.value IS NULL);
 
+-- Expect 1,958,102 records in styles table
 INSERT INTO styles (style_id, product_id, name, default_style, original_price, sale_price)
   SELECT style_id, product_id, name, default_style, original_price, sale_price
   FROM styles_temp;
 
+-- Expect 5,655,656 records in photos table
 INSERT INTO photos (photo_id, style_id, url, thumbnail_url)
   SELECT photo_id, style_id, url, thumbnail_url
   FROM photos_temp;
 
+-- Expect 11,323,917 records in skus table (should sku_id 5 and 6 be combined or is sku_id 6 really XXL?)
 INSERT INTO skus (sku_id, style_id, size, quantity)
   SELECT sku_id, style_id, size, quantity
   FROM skus_temp;

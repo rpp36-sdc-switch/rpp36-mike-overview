@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/schema.sql
+  psql postgres < db/elt/schema.sql
 */
 
 /*

@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/schemaTemp.sql
+  psql postgres < db/elt/schemaTemp.sql
 */
 
 \c overview;
@@ -23,7 +23,7 @@ INSERT INTO features (feature, value)
 INSERT INTO product_features (product_id, feature_id)
   SELECT DISTINCT features_temp.product_id, features.feature_id
   FROM features_temp, features
-  WHERE features_temp.feature = features.feature AND features_temp.value = features.value;
+  WHERE features_temp.feature = features.feature AND (features_temp.value = features.value OR features.value IS NULL);
 
 INSERT INTO styles (style_id, product_id, name, default_style, original_price, sale_price)
   SELECT style_id, product_id, name, default_style, original_price, sale_price
