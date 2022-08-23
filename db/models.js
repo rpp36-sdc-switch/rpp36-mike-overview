@@ -20,7 +20,6 @@ module.exports = {
             'default_price': results.rows[0].default_price,
             'features': []
           };
-
           for (var i = 0; i < results.rows.length; i++) {
             let feature = {
               'feature': results.rows[i].feature,

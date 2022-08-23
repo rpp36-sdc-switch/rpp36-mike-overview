@@ -14,7 +14,7 @@ app.get('/products/:product_id', (req, res) => {
     if (err) {
       res.status(500).send(err.message);
     } else {
-      res.status(200).send( { results: result });
+      res.status(200).send(result);
     }
   });
 });
@@ -24,7 +24,7 @@ app.post('/products/:product_id', (req, res) => {
     if (err) {
       res.status(500).send(err.message);
     } else {
-      res.status(201).send( { results: result });
+      res.status(201).send(result);
     }
   });
 });
@@ -35,7 +35,7 @@ app.get('/products/:product_id/styles', (req, res) => {
     if (err) {
       res.status(500).send(err.message);
     } else {
-      res.status(200).send( { results: result });
+      res.status(200).send(result);
     }
   });
 });
@@ -45,15 +45,15 @@ app.post('/products/:product_id/styles', (req, res) => {
     if (err) {
       res.status(500).send(err.message);
     } else {
-      res.status(201).send( { results: result });
+      res.status(201).send(result);
     }
   });
 });
 
 
 // Initial Test Route
-// app.get('/products', (req, res) => {
-//   res.status(200).send({ test: 'test' });
-// });
+app.get('/products', (req, res) => {
+  res.status(200).send({ test: 'test' });
+});
 
 module.exports = app;
