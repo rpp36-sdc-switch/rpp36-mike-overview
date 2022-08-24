@@ -3,61 +3,82 @@ const db = require('./postgres.js');
 module.exports = {
   productInfo: {
     get: function(productId, cb) {
-      let query =
-        `SELECT products.product_id, products.name, products.slogan, products.description, categories.category, products.default_price, features.feature, features.value
-         FROM products, categories, features, product_features
-         WHERE products.product_id=${productId} AND products.category_id = categories.category_id AND products.product_id = product_features.product_id AND product_features.feature_id = features.feature_id;`;
+      let query = `
+      WITH
+      featuresCTE AS (
+        SELECT
+          json_build_object('feature', features.feature, 'value', features.value) AS features
+        FROM features
+        LEFT JOIN product_features ON features.feature_id = product_features.feature_id
+        WHERE product_features.product_id = ${productId}
+        GROUP BY features.feature_id
+      )
+      SELECT
+        json_build_object(
+          'id', products.product_id,
+          'name', products.name,
+          'slogan', products.slogan,
+          'description', products.description,
+          'category', (select category from categories where products.category_id = categories.category_id),
+          'default_price', products.default_price,
+          'features', (select json_agg(features) from featuresCTE)
+        ) AS product_info
+      FROM products
+      WHERE products.product_id = ${productId}
+      GROUP BY products.product_id;`;
       db.query(query, (err, results) => {
         if (err) {
           cb(err);
         } else {
-          let data = {
-            'id': results.rows[0].product_id,
-            'name': results.rows[0].name,
-            'slogan': results.rows[0].slogan,
-            'description': results.rows[0].description,
-            'category': results.rows[0].category,
-            'default_price': results.rows[0].default_price,
-            'features': []
-          };
-          for (var i = 0; i < results.rows.length; i++) {
-            let feature = {
-              'feature': results.rows[i].feature,
-              'value': results.rows[i].value
-            };
-            data.features.push(feature);
+          if (results.rows.length === 0) {
+            cb({status: 404, message: 'Product id does not exist'});
+          } else {
+            let data = results.rows[0].product_info;
+            if (data.features === null) {
+              data.features = [];
+            }
+            cb(null, data);
           }
-          cb(null, data);
         }
       });
     },
     post: function(productId, cb) {
-      let query =
-        `SELECT products.product_id, products.name, products.slogan, products.description, categories.category, products.default_price, features.feature, features.value
-         FROM products, categories, features, product_features
-         WHERE products.product_id=${productId} AND products.category_id = categories.category_id AND products.product_id = product_features.product_id AND product_features.feature_id = features.feature_id;`;
+      let query = `
+      WITH
+      featuresCTE AS (
+        SELECT
+          json_build_object('feature', features.feature, 'value', features.value) AS features
+        FROM features
+        LEFT JOIN product_features ON features.feature_id = product_features.feature_id
+        WHERE product_features.product_id = ${productId}
+        GROUP BY features.feature_id
+      )
+      SELECT
+        json_build_object(
+          'id', products.product_id,
+          'name', products.name,
+          'slogan', products.slogan,
+          'description', products.description,
+          'category', (select category from categories where products.category_id = categories.category_id),
+          'default_price', products.default_price,
+          'features', (select json_agg(features) from featuresCTE)
+        ) AS product_info
+      FROM products
+      WHERE products.product_id = ${productId}
+      GROUP BY products.product_id;`;
       db.query(query, (err, results) => {
         if (err) {
           cb(err);
         } else {
-          let data = {
-            'id': results.rows[0].product_id,
-            'name': results.rows[0].name,
-            'slogan': results.rows[0].slogan,
-            'description': results.rows[0].description,
-            'category': results.rows[0].category,
-            'default_price': results.rows[0].default_price,
-            'features': []
-          };
-
-          for (var i = 0; i < results.rows.length; i++) {
-            let feature = {
-              'feature': results.rows[i].feature,
-              'value': results.rows[i].value
-            };
-            data.features.push(feature);
+          if (results.rows.length === 0) {
+            cb({status: 404, message: 'Product id does not exist'});
+          } else {
+            let data = results.rows[0].product_info;
+            if (data.features === null) {
+              data.features = [];
+            }
+            cb(null, data);
           }
-          cb(null, data);
         }
       });
     }
@@ -108,22 +129,26 @@ module.exports = {
         if (err) {
           cb(err);
         } else {
-          let styles = results.rows[0].product_styles;
-          let convertSkusArrayToObject = function(skusArr) {
-            let skusObj = {};
-            for (var i = 0; i < skusArr.length; i++) {
-              for (const [key, value] of Object.entries(skusArr[i])) {
-                skusObj[key] = value;
+          if (results.rows.length === 0) {
+            cb({status: 404, message: 'Product id does not exist'});
+          } else {
+            let styles = results.rows[0].product_styles;
+            let convertSkusArrayToObject = function(skusArr) {
+              let skusObj = {};
+              for (var i = 0; i < skusArr.length; i++) {
+                for (const [key, value] of Object.entries(skusArr[i])) {
+                  skusObj[key] = value;
+                }
               }
+              return skusObj;
+            };
+            for (var i = 0; i < styles.results.length; i++) {
+              let skusArr = styles.results[i].skus;
+              let skusObj = convertSkusArrayToObject(skusArr);
+              styles.results[i].skus = skusObj;
             }
-            return skusObj;
-          };
-          for (var i = 0; i < styles.results.length; i++) {
-            let skusArr = styles.results[i].skus;
-            let skusObj = convertSkusArrayToObject(skusArr);
-            styles.results[i].skus = skusObj;
+            cb(null, styles);
           }
-          cb(null, styles);
         }
       });
     },
@@ -172,22 +197,26 @@ module.exports = {
         if (err) {
           cb(err);
         } else {
-          let styles = results.rows[0].product_styles;
-          let convertSkusArrayToObject = function(skusArr) {
-            let skusObj = {};
-            for (var i = 0; i < skusArr.length; i++) {
-              for (const [key, value] of Object.entries(skusArr[i])) {
-                skusObj[key] = value;
+          if (results.rows.length === 0) {
+            cb({status: 404, message: 'Product id does not exist'});
+          } else {
+            let styles = results.rows[0].product_styles;
+            let convertSkusArrayToObject = function(skusArr) {
+              let skusObj = {};
+              for (var i = 0; i < skusArr.length; i++) {
+                for (const [key, value] of Object.entries(skusArr[i])) {
+                  skusObj[key] = value;
+                }
               }
+              return skusObj;
+            };
+            for (var i = 0; i < styles.results.length; i++) {
+              let skusArr = styles.results[i].skus;
+              let skusObj = convertSkusArrayToObject(skusArr);
+              styles.results[i].skus = skusObj;
             }
-            return skusObj;
-          };
-          for (var i = 0; i < styles.results.length; i++) {
-            let skusArr = styles.results[i].skus;
-            let skusObj = convertSkusArrayToObject(skusArr);
-            styles.results[i].skus = skusObj;
+            cb(null, styles);
           }
-          cb(null, styles);
         }
       });
     },

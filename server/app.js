@@ -12,7 +12,7 @@ app.use(express.urlencoded( {extended: true} ));
 app.get('/products/:product_id', (req, res) => {
   models.productInfo.get(req.params.product_id, (err, result) => {
     if (err) {
-      res.status(500).send(err.message);
+      res.status(err.status).send(err.message);
     } else {
       res.status(200).send(result);
     }
@@ -22,7 +22,7 @@ app.get('/products/:product_id', (req, res) => {
 app.post('/products/:product_id', (req, res) => {
   models.productInfo.post(req.params.product_id, (err, result) => {
     if (err) {
-      res.status(500).send(err.message);
+      res.status(err.status).send(err.message);
     } else {
       res.status(201).send(result);
     }
@@ -33,7 +33,7 @@ app.post('/products/:product_id', (req, res) => {
 app.get('/products/:product_id/styles', (req, res) => {
   models.productStyles.get(req.params.product_id, (err, result) => {
     if (err) {
-      res.status(500).send(err.message);
+      res.status(err.status).send(err.message);
     } else {
       res.status(200).send(result);
     }
@@ -43,7 +43,7 @@ app.get('/products/:product_id/styles', (req, res) => {
 app.post('/products/:product_id/styles', (req, res) => {
   models.productStyles.post(req.params.product_id, (err, result) => {
     if (err) {
-      res.status(500).send(err.message);
+      res.status(err.status).send(err.message);
     } else {
       res.status(201).send(result);
     }
