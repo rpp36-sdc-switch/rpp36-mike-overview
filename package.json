@@ -4,7 +4,7 @@
   "description": "Overview service for system design capstone",
   "main": "server.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "start": "nodemon server/server.js"
   },
   "repository": {

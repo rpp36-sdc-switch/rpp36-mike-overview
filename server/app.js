@@ -52,8 +52,8 @@ app.post('/products/:product_id/styles', (req, res) => {
 
 
 // Initial Test Route
-app.get('/products', (req, res) => {
-  res.status(200).send({ test: 'test' });
-});
+// app.get('/products', (req, res) => {
+//   res.status(200).send({ test: 'test' });
+// });
 
 module.exports = app;
