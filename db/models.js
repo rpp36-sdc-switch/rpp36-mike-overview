@@ -143,7 +143,15 @@ module.exports = {
               return skusObj;
             };
             for (var i = 0; i < styles.results.length; i++) {
-              let skusArr = styles.results[i].skus;
+              let skusArr;
+              if (styles.results[i].photos === null) {
+                styles.results[i].photos = [ { 'thumbnail_url': null, url: null } ];
+              }
+              if (Array.isArray(styles.results[i].skus)) {
+                skusArr = styles.results[i].skus;
+              } else {
+                skusArr = [ { null: { quantity: null, size: null } } ];
+              }
               let skusObj = convertSkusArrayToObject(skusArr);
               styles.results[i].skus = skusObj;
             }
@@ -211,7 +219,15 @@ module.exports = {
               return skusObj;
             };
             for (var i = 0; i < styles.results.length; i++) {
-              let skusArr = styles.results[i].skus;
+              let skusArr;
+              if (styles.results[i].photos === null) {
+                styles.results[i].photos = [ { 'thumbnail_url': null, url: null } ];
+              }
+              if (Array.isArray(styles.results[i].skus)) {
+                skusArr = styles.results[i].skus;
+              } else {
+                skusArr = [ { null: { quantity: null, size: null } } ];
+              }
               let skusObj = convertSkusArrayToObject(skusArr);
               styles.results[i].skus = skusObj;
             }
