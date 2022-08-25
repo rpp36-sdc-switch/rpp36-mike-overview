@@ -130,7 +130,7 @@ module.exports = {
           cb(err);
         } else {
           if (results.rows.length === 0) {
-            cb({status: 404, message: 'Product id does not exist'});
+            cb(null, {'product_id': productId, results: []});
           } else {
             let styles = results.rows[0].product_styles;
             let convertSkusArrayToObject = function(skusArr) {
@@ -206,7 +206,7 @@ module.exports = {
           cb(err);
         } else {
           if (results.rows.length === 0) {
-            cb({status: 404, message: 'Product id does not exist'});
+            cb(null, {'product_id': productId, results: []});
           } else {
             let styles = results.rows[0].product_styles;
             let convertSkusArrayToObject = function(skusArr) {
