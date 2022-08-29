@@ -19,16 +19,6 @@ app.get('/products/:product_id', (req, res) => {
   });
 });
 
-app.post('/products/:product_id', (req, res) => {
-  models.productInfo.post(req.params.product_id, (err, result) => {
-    if (err) {
-      res.status(err.status).send(err.message);
-    } else {
-      res.status(201).send(result);
-    }
-  });
-});
-
 // Get Product Styles
 app.get('/products/:product_id/styles', (req, res) => {
   models.productStyles.get(req.params.product_id, (err, result) => {
@@ -39,17 +29,6 @@ app.get('/products/:product_id/styles', (req, res) => {
     }
   });
 });
-
-app.post('/products/:product_id/styles', (req, res) => {
-  models.productStyles.post(req.params.product_id, (err, result) => {
-    if (err) {
-      res.status(err.status).send(err.message);
-    } else {
-      res.status(201).send(result);
-    }
-  });
-});
-
 
 // Initial Test Route
 // app.get('/products', (req, res) => {
