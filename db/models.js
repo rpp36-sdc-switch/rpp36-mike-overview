@@ -121,4 +121,23 @@ module.exports = {
       });
     }
   },
+  relatedProducts: {
+    get: function(productId, cb) {
+      let query = `
+      SELECT json_agg(related_product_id) as data
+      FROM related_products
+      WHERE related_products.current_product_id = ${productId};`;
+      db.query(query, (err, results) => {
+        if (err) {
+          cb(err);
+        } else {
+          if (results.rows[0].data === null) {
+            cb(null, []);
+          } else {
+            cb(null, results.rows[0].data);
+          }
+        }
+      });
+    }
+  },
 };

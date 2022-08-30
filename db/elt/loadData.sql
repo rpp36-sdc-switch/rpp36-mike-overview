@@ -37,6 +37,11 @@ INSERT INTO skus (sku_id, style_id, size, quantity)
   SELECT sku_id, style_id, size, quantity
   FROM skus_temp;
 
+INSERT INTO related_products (current_product_id, related_product_id)
+  SELECT DISTINCT current_product_id, related_product_id
+  FROM related_temp
+  WHERE related_products_temp.related_product_id > 0 AND related_products_temp.current_product_id <> related_products_temp.related_product_id;
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Remove temporary tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +51,7 @@ DROP TABLE features_temp;
 DROP TABLE styles_temp;
 DROP TABLE photos_temp;
 DROP TABLE skus_temp;
+DROP TABLE related_products_temp;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Index tables

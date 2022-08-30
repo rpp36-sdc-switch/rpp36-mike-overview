@@ -86,4 +86,27 @@ describe('Test overview service', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.results.length).toBe(0);
   });
+
+  it('It should respond to GET request with valid product id sent to /products/:product_id/related', async () => {
+    const res = await request(app).get('/products/1/related');
+    console.log(res.body);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(4);
+    expect(res.body[0]).toBe(2);
+  });
+
+  it('It should respond to GET request with valid product id sent to /products/:product_id/related', async () => {
+    const res = await request(app).get('/products/10/related');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
+
+  it('It should respond to GET request with invalid product id sent to /products/:product_id/related', async () => {
+    const res = await request(app).get('/products/1000012/related');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
 });

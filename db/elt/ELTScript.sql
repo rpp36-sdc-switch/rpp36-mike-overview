@@ -62,6 +62,13 @@ CREATE TABLE skus_temp (
   PRIMARY KEY (sku_id)
 );
 
+CREATE TABLE related_products_temp (
+  related_id SERIAL,
+  current_product_id INT,
+  related_product_id INT,
+  PRIMARY KEY (related_id)
+);
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Load source data into temporary tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +87,8 @@ COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Applicat
 COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/photos/photos_af' DELIMITER ',' NULL as 'null' CSV;
 
 COPY skus_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/skus.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
+
+COPY related_products_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/related.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Alter temporary tables if necessary
@@ -193,6 +202,19 @@ CREATE TABLE skus (
       REFERENCES styles(style_id)
 );
 
+CREATE TABLE related_products (
+  current_product_id INT NOT NULL,
+  related_product_id INT NOT NULL,
+
+  CONSTRAINT fk_current
+    FOREIGN KEY (current_product_id)
+      REFERENCES products(product_id),
+  CONSTRAINT fk_related
+    FOREIGN KEY (related_product_id)
+      REFERENCES products(product_id),
+  UNIQUE (current_product_id, related_product_id)
+);
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Load data from temporary tables into permanent tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -232,6 +254,12 @@ INSERT INTO skus (sku_id, style_id, size, quantity)
   SELECT sku_id, style_id, size, quantity
   FROM skus_temp;
 
+-- Expect 4,508,073 records in related table (4,508,263 from source; 58 where related_product_id = 0, 130 duplicates (1 with id 0), 3 current_product_id = related_product_id)
+INSERT INTO related_products (current_product_id, related_product_id)
+  SELECT DISTINCT current_product_id, related_product_id
+  FROM related_products_temp
+  WHERE related_products_temp.related_product_id > 0 AND related_products_temp.current_product_id <> related_products_temp.related_product_id;
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Remove temporaty tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +269,7 @@ DROP TABLE features_temp;
 DROP TABLE styles_temp;
 DROP TABLE photos_temp;
 DROP TABLE skus_temp;
+DROP TABLE related_products_temp;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Create indexes that may have measurable effect on database performance
@@ -280,5 +309,6 @@ select count(*) from product_features;
 select count(*) from styles;
 select count(*) from photos;
 select count(*) from skus;
+select count(*) from related_products;
 
 \q

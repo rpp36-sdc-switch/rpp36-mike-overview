@@ -30,6 +30,17 @@ app.get('/products/:product_id/styles', (req, res) => {
   });
 });
 
+// Get Related Products
+app.get('/products/:product_id/related', (req, res) => {
+  models.relatedProducts.get(req.params.product_id, (err, result) => {
+    if (err) {
+      res.status(err.status).send(err.message);
+    } else {
+      res.status(200).send(result);
+    }
+  });
+});
+
 // Initial Test Route
 // app.get('/products', (req, res) => {
 //   res.status(200).send({ test: 'test' });

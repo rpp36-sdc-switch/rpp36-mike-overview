@@ -60,6 +60,13 @@ CREATE TABLE skus_temp (
   PRIMARY KEY (sku_id)
 );
 
+CREATE TABLE related_products_temp (
+  related_id SERIAL,
+  current_product_id INT,
+  related_product_id INT,
+  PRIMARY KEY (related_id)
+);
+
 /*
 Record 48 of the photos.csv file was missing an ending quotation mark ("), so this file required some data cleansing. The process took about an hour, most of which was spent merging files back together.
 
@@ -133,6 +140,9 @@ COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Applicat
 
 skus_temp.csv - expect COPY 11323917
 COPY skus_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/skus.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
+
+related_products_temp.csv - expect COPY 4508263
+COPY related_products_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/related.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 // For the styles_temp table, change default_style to boolean
 ALTER TABLE styles_temp ALTER COLUMN default_style DROP DEFAULT;

@@ -111,3 +111,16 @@ CREATE TABLE skus (
     FOREIGN KEY (style_id)
       REFERENCES styles(style_id)
 );
+
+CREATE TABLE related_products (
+  current_product_id INT NOT NULL,
+  related_product_id INT NOT NULL,
+
+  CONSTRAINT fk_current
+    FOREIGN KEY (current_product_id)
+      REFERENCES products(product_id),
+  CONSTRAINT fk_related
+    FOREIGN KEY (related_product_id)
+      REFERENCES products(product_id),
+  UNIQUE (current_product_id, related_product_id)
+);
