@@ -275,14 +275,10 @@ DROP TABLE related_products_temp;
 -- Create indexes that may have measurable effect on database performance
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 
-CREATE INDEX idx_products_name
-  ON products(name);
 CREATE INDEX idx_products_category_id
   ON products(category_id);
 CREATE INDEX idx_styles_product_id
   ON styles(product_id);
-CREATE INDEX idx_styles_name
-  ON styles(name);
 CREATE INDEX idx_photos_style_id
   ON photos(style_id);
 CREATE INDEX idx_skus_style_id
