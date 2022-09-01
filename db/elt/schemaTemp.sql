@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/schemaTemp.sql
+  psql postgres < db/elt/schemaTemp.sql
 
 After source data is loaded, check max length of loaded text fields.
   select max(length(name)) from products_temp;
@@ -60,6 +60,13 @@ CREATE TABLE skus_temp (
   PRIMARY KEY (sku_id)
 );
 
+CREATE TABLE related_products_temp (
+  related_id SERIAL,
+  current_product_id INT,
+  related_product_id INT,
+  PRIMARY KEY (related_id)
+);
+
 /*
 Record 48 of the photos.csv file was missing an ending quotation mark ("), so this file required some data cleansing. The process took about an hour, most of which was spent merging files back together.
 
@@ -88,7 +95,6 @@ Regbuild to one file (optional) - Still had some errors in the first file. To co
 
   cat photos_a* > photos_temp.csv
 
-/*
 After created, log list of relations and tables to a text file.
 
 $ psql postgres
@@ -111,17 +117,17 @@ After created, load data from csv files.
 $ psql postgres
 \c overview
 
-products.csv - expect COPY 1000011
+products_temp.csv - expect COPY 1000011
 COPY products_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/product.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
-features.csv - expect COPY 2219279
+features_temp.csv - expect COPY 2219279
 COPY features_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/features.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
-styles.csv - expect COPY 1958102
+styles_temp.csv - expect COPY 1958102
 COPY styles_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/styles.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 
-photos.csv - expect COPY 5655719 (initially, the data was not fully scrubbed, photos_aa needed more cleaning)
+photos_temp.csv - expect COPY 5655656 (initially, the data was not fully scrubbed, photos_aa needed more cleaning)
 COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/photos_temp.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 Preferred:
@@ -132,8 +138,11 @@ COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Applicat
 COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/photos/photos_ae' DELIMITER ',' NULL as 'null' CSV;
 COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/photos/photos_af' DELIMITER ',' NULL as 'null' CSV;
 
-skus.csv - expect COPY 11323917
+skus_temp.csv - expect COPY 11323917
 COPY skus_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/skus.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
+
+related_products_temp.csv - expect COPY 4508263
+COPY related_products_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/related.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 // For the styles_temp table, change default_style to boolean
 ALTER TABLE styles_temp ALTER COLUMN default_style DROP DEFAULT;

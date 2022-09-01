@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/ELTScript.sql
+  psql postgres < db/elt/ELTScript.sql
 */
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +62,13 @@ CREATE TABLE skus_temp (
   PRIMARY KEY (sku_id)
 );
 
+CREATE TABLE related_products_temp (
+  related_id SERIAL,
+  current_product_id INT,
+  related_product_id INT,
+  PRIMARY KEY (related_id)
+);
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Load source data into temporary tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +87,8 @@ COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Applicat
 COPY photos_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/photos/photos_af' DELIMITER ',' NULL as 'null' CSV;
 
 COPY skus_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/skus.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
+
+COPY related_products_temp FROM '/Users/mpmanzo/HackReactor/rpp36/SDC-Project/SDC-Application-Data/related.csv' DELIMITER ',' NULL as 'null' CSV HEADER;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Alter temporary tables if necessary
@@ -193,37 +202,63 @@ CREATE TABLE skus (
       REFERENCES styles(style_id)
 );
 
+CREATE TABLE related_products (
+  current_product_id INT NOT NULL,
+  related_product_id INT NOT NULL,
+
+  CONSTRAINT fk_current
+    FOREIGN KEY (current_product_id)
+      REFERENCES products(product_id),
+  CONSTRAINT fk_related
+    FOREIGN KEY (related_product_id)
+      REFERENCES products(product_id),
+  UNIQUE (current_product_id, related_product_id)
+);
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Load data from temporary tables into permanent tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- Expect 28 records in categories table
 INSERT INTO categories (category)
   SELECT DISTINCT category FROM products_temp ORDER BY category ASC;
 
+-- Expect 1,000,011 records in products table
 INSERT INTO products (product_id, name, slogan, description, category_id, default_price)
   SELECT products_temp.product_id, products_temp.name, products_temp.slogan, products_temp.description, categories.category_id, products_temp.default_price
   FROM products_temp, categories
   WHERE products_temp.category = categories.category;
 
+-- Expect 46 records in features table
 INSERT INTO features (feature, value)
   SELECT DISTINCT feature, value FROM features_temp ORDER BY feature, value ASC;
 
+-- Expect 2,132,016 records in product_features table (2,219,279 records in source data includes 87,263 duplicates)
 INSERT INTO product_features (product_id, feature_id)
   SELECT DISTINCT features_temp.product_id, features.feature_id
   FROM features_temp, features
-  WHERE features_temp.feature = features.feature AND features_temp.value = features.value;
+  WHERE features_temp.feature = features.feature AND (features_temp.value = features.value OR features.value IS NULL);
 
+-- Expect 1,958,102 records in styles table
 INSERT INTO styles (style_id, product_id, name, default_style, original_price, sale_price)
   SELECT style_id, product_id, name, default_style, original_price, sale_price
   FROM styles_temp;
 
+-- Expect 5,655,656 records in photos table
 INSERT INTO photos (photo_id, style_id, url, thumbnail_url)
   SELECT photo_id, style_id, url, thumbnail_url
   FROM photos_temp;
 
+-- Expect 11,323,917 records in skus table (should sku_id 5 and 6 be combined or is sku_id 6 really XXL?)
 INSERT INTO skus (sku_id, style_id, size, quantity)
   SELECT sku_id, style_id, size, quantity
   FROM skus_temp;
+
+-- Expect 4,508,073 records in related table (4,508,263 from source; 58 where related_product_id = 0, 130 duplicates (1 with id 0), 3 current_product_id = related_product_id)
+INSERT INTO related_products (current_product_id, related_product_id)
+  SELECT DISTINCT current_product_id, related_product_id
+  FROM related_products_temp
+  WHERE related_products_temp.related_product_id > 0 AND related_products_temp.current_product_id <> related_products_temp.related_product_id;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Remove temporaty tables
@@ -234,19 +269,16 @@ DROP TABLE features_temp;
 DROP TABLE styles_temp;
 DROP TABLE photos_temp;
 DROP TABLE skus_temp;
+DROP TABLE related_products_temp;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Create indexes that may have measurable effect on database performance
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 
-CREATE INDEX idx_products_name
-  ON products(name);
 CREATE INDEX idx_products_category_id
   ON products(category_id);
 CREATE INDEX idx_styles_product_id
   ON styles(product_id);
-CREATE INDEX idx_styles_name
-  ON styles(name);
 CREATE INDEX idx_photos_style_id
   ON photos(style_id);
 CREATE INDEX idx_skus_style_id
@@ -273,5 +305,6 @@ select count(*) from product_features;
 select count(*) from styles;
 select count(*) from photos;
 select count(*) from skus;
+select count(*) from related_products;
 
 \q

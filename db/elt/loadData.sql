@@ -1,6 +1,6 @@
 /*
 Execute this file from the command line by typing:
-  psql postgres < db/schemaTemp.sql
+  psql postgres < db/elt/schemaTemp.sql
 */
 
 \c overview;
@@ -23,7 +23,7 @@ INSERT INTO features (feature, value)
 INSERT INTO product_features (product_id, feature_id)
   SELECT DISTINCT features_temp.product_id, features.feature_id
   FROM features_temp, features
-  WHERE features_temp.feature = features.feature AND features_temp.value = features.value;
+  WHERE features_temp.feature = features.feature AND (features_temp.value = features.value OR features.value IS NULL);
 
 INSERT INTO styles (style_id, product_id, name, default_style, original_price, sale_price)
   SELECT style_id, product_id, name, default_style, original_price, sale_price
@@ -37,6 +37,11 @@ INSERT INTO skus (sku_id, style_id, size, quantity)
   SELECT sku_id, style_id, size, quantity
   FROM skus_temp;
 
+INSERT INTO related_products (current_product_id, related_product_id)
+  SELECT DISTINCT current_product_id, related_product_id
+  FROM related_temp
+  WHERE related_products_temp.related_product_id > 0 AND related_products_temp.current_product_id <> related_products_temp.related_product_id;
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Remove temporary tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,19 +51,16 @@ DROP TABLE features_temp;
 DROP TABLE styles_temp;
 DROP TABLE photos_temp;
 DROP TABLE skus_temp;
+DROP TABLE related_products_temp;
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 -- Index tables
 -- ////////////////////////////////////////////////////////////////////////////////////////////////
 
-CREATE INDEX idx_products_name
-  ON products(name);
 CREATE INDEX idx_products_category_id
   ON products(category_id);
 CREATE INDEX idx_styles_product_id
   ON styles(product_id);
-CREATE INDEX idx_styles_name
-  ON styles(name);
 CREATE INDEX idx_photos_style_id
   ON photos(style_id);
 CREATE INDEX idx_skus_style_id
