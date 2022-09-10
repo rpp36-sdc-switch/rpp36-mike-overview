@@ -1,4 +1,4 @@
-const db = require('./postgres.js');
+const pool = require('./postgres.js');
 
 module.exports = {
   productInfo: {
@@ -26,7 +26,7 @@ module.exports = {
       FROM products
       WHERE products.product_id = ${productId}
       GROUP BY products.product_id;`;
-      db.query(query, (err, results) => {
+      pool.query(query, (err, results) => {
         if (err) {
           cb(err);
         } else {
@@ -85,7 +85,7 @@ module.exports = {
         WHERE styles.product_id = ${productId}
         GROUP BY styles.product_id;`;
 
-      db.query(query, (err, results) => {
+      pool.query(query, (err, results) => {
         if (err) {
           cb(err);
         } else {
@@ -127,7 +127,7 @@ module.exports = {
       SELECT json_agg(related_product_id) as data
       FROM related_products
       WHERE related_products.current_product_id = ${productId};`;
-      db.query(query, (err, results) => {
+      pool.query(query, (err, results) => {
         if (err) {
           cb(err);
         } else {

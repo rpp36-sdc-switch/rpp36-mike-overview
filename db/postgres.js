@@ -1,14 +1,15 @@
-const { Client } = require('pg');
-const { user, host, database, password, port } = require('../dbConfig');
+require('dotenv').config();
+const { Pool } = require('pg');
+const { PGHOST, PGUSER, PGDATABASE, PGPASSWORD, PGPORT } = process.env;
 
-const db = new Client({
-  user,
-  host,
-  database,
-  password,
-  port,
+const pool = new Pool({
+  PGUSER,
+  PGHOST,
+  PGDATABASE,
+  PGPASSWORD,
+  PGPORT,
 });
 
-db.connect();
+// pool.connect();
 
-module.exports = db;
+module.exports = pool;
